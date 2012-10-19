@@ -9,7 +9,7 @@ import random
 locale.setlocale(locale.LC_NUMERIC, "")
 out = sys.stdout
 def __init__(self):
-    """pyTwister"""
+    """pyTwister: A PyMOL version of Twister"""
 
 def format_num(num):
     """Format a number according to given places.

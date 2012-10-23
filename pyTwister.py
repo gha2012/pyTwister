@@ -185,28 +185,27 @@ def calculateAlphaHelicalPhaseYieldPerResidue(caPositions, helixAxisPoints):
 		id1=random.random()*1000
 		id2=random.random()*1000
 		id=str(id1)+str(id2)
-		cmd.pseudoatom(pos=str([caPositions[i-1].item(0),caPositions[i-1].item(1),caPositions[i-1].item(2)]), object="ca_i-1"+id)
-		cmd.pseudoatom(pos=str([caPositions[i].item(0),caPositions[i].item(1),caPositions[i].item(2)]), object="ca_i"+id)
-		cmd.pseudoatom(pos=str([caPositions[i+1].item(0),caPositions[i+1].item(1),caPositions[i+1].item(2)]), object="ca_i+1"+id)
-		cmd.pseudoatom(pos=str([helixAxisPoints[i-1].item(0),helixAxisPoints[i-1].item(1),helixAxisPoints[i-1].item(2)]), object="axis_i-1"+id)
-		cmd.pseudoatom(pos=str([helixAxisPoints[i].item(0),helixAxisPoints[i].item(1),helixAxisPoints[i].item(2)]), object="axis_i"+id)
-		cmd.pseudoatom(pos=str([helixAxisPoints[i+1].item(0),helixAxisPoints[i+1].item(1),helixAxisPoints[i+1].item(2)]), object="axis_i+1"+id)
-		
-		a=cmd.get_dihedral("ca_i-1"+id,"axis_i-1"+id,"axis_i"+id,"ca_i"+id,state=0)
-		b=cmd.get_dihedral("ca_i"+id,"axis_i"+id,"axis_i+1"+id,"ca_i+1"+id,state=0)
-		#a=getDihedral(caPositions[i-1], helixAxisPoints[i-1], helixAxisPoints[i], caPositions[i])
-		#b=getDihedral(caPositions[i], helixAxisPoints[i], helixAxisPoints[i+1], caPositions[i+1])
+		#cmd.pseudoatom(pos=str([caPositions[i-1].item(0),caPositions[i-1].item(1),caPositions[i-1].item(2)]), object="ca_i-1"+id)
+		#cmd.pseudoatom(pos=str([caPositions[i].item(0),caPositions[i].item(1),caPositions[i].item(2)]), object="ca_i"+id)
+		#cmd.pseudoatom(pos=str([caPositions[i+1].item(0),caPositions[i+1].item(1),caPositions[i+1].item(2)]), object="ca_i+1"+id)
+		#cmd.pseudoatom(pos=str([helixAxisPoints[i-1].item(0),helixAxisPoints[i-1].item(1),helixAxisPoints[i-1].item(2)]), object="axis_i-1"+id)
+		#cmd.pseudoatom(pos=str([helixAxisPoints[i].item(0),helixAxisPoints[i].item(1),helixAxisPoints[i].item(2)]), object="axis_i"+id)
+		#cmd.pseudoatom(pos=str([helixAxisPoints[i+1].item(0),helixAxisPoints[i+1].item(1),helixAxisPoints[i+1].item(2)]), object="axis_i+1"+id)
+		#a=cmd.get_dihedral("ca_i-1"+id,"axis_i-1"+id,"axis_i"+id,"ca_i"+id,state=0)
+		#b=cmd.get_dihedral("ca_i"+id,"axis_i"+id,"axis_i+1"+id,"ca_i+1"+id,state=0)
+		a=getDihedral(caPositions[i-1], helixAxisPoints[i-1], helixAxisPoints[i], caPositions[i])
+		b=getDihedral(caPositions[i], helixAxisPoints[i], helixAxisPoints[i+1], caPositions[i+1])
 		#a=getDihedral(helixAxisPoints[i-1], caPositions[i-1], caPositions[i], helixAxisPoints[i])
 		#b=getDihedral(helixAxisPoints[i], caPositions[i],  caPositions[i+1], helixAxisPoints[i+1])
 		
 		
-		cmd.delete("ca_i-1"+id)
-		cmd.delete("ca_i"+id)
-		cmd.delete("ca_i+1"+id)
-		cmd.delete("axis_i-1"+id)
-		cmd.delete("axis_i"+id)
-		cmd.delete("axis_i+1"+id)
-		print a, b
+		#cmd.delete("ca_i-1"+id)
+		#cmd.delete("ca_i"+id)
+		#cmd.delete("ca_i+1"+id)
+		#cmd.delete("axis_i-1"+id)
+		#cmd.delete("axis_i"+id)
+		#cmd.delete("axis_i+1"+id)
+		#print a, b
 		#print (a+b)/2
 		alphaHelicalPhaseYieldPerResidue.append((a+b)/2)
 	return alphaHelicalPhaseYieldPerResidue
@@ -227,25 +226,27 @@ def calculateAlphaHelicalPitchPerResidue(helixAxisPoints,rise,phase):
 		alphaResiduesPerTurn.append(residuesPerTurn)
 	return alphaResiduesPerTurn
 
-def calculateCrickAngle(An, On, Cn):
+def calculateCrickAngle(An, On, Cn, nextOn):
 	#print An, On, Cn
-	OC=Cn-On
-	normOC=OC/numpy.linalg.norm(OC)
+	#Cn-On
+	#normOC=OC/numpy.linalg.norm(OC)
 	#print normOC
-	OA=An-On
-	normOA=OA/numpy.linalg.norm(OA)
+	#An-On
+	#normOA=OA/numpy.linalg.norm(OA)
 	#print normOA
-	dot=numpy.dot(normOC,normOA)
-	cross=numpy.cross(normOA,normOC)
-	#print cross
-	angle=numpy.arccos(dot)*180/numpy.pi
-	
-	if (cross[2]<0):
+	#dot=numpy.dot(normOC,normOA)
+	OC=getNormedVector(On, Cn)
+	OA=getNormedVector(On, An)
+	OnextOn=getNormedVector(On, nextOn)
+	#cross=numpy.cross(OA,OC)
+	cross=numpy.cross(OC,OnextOn)
+	mixed=numpy.dot(OA, cross)
+	angle=getAngle(OC,OA) #numpy.arccos(dot)*180/numpy.pi
+
+	if (mixed<0):
 		angle*=1
-	#else:
-	if (cross[2]>0):
+	else: #(mixed>=0):
 		angle*=-1
-	#print angle
 	return angle
 
 def pyTwister(selection, chains):
@@ -335,20 +336,19 @@ def pyTwister(selection, chains):
 		average/=len(coiledCoils)
 		averageCoiledCoilParameters[key]=average
 	
-	#calculate Crick angle and assign positions
+	#calculate Crick angles averaged over all helices and assign positions
 	crickAnglesForAllHelices=[]
-	
-	i=0
-	while (i < len(chains)):
+	for i in range (0,len(chains)):
 		#print i
 		crickAngles=[]
 		crickAngles.append(0)
-		#crickAngles.append(0)
 		for j in range (1,len(helicesInSelection[i]["avgHelixAxisPoints"])-1):
-			angle=calculateCrickAngle(helicesInSelection[i]['caPositions'][j], helicesInSelection[i]["avgHelixAxisPoints"][j], averageCoiledCoilParameters['coiledCoilAxisPoints'][j])
+			angle=calculateCrickAngle(helicesInSelection[i]['caPositions'][j], helicesInSelection[i]["avgHelixAxisPoints"][j], averageCoiledCoilParameters['coiledCoilAxisPoints'][j], helicesInSelection[i]["avgHelixAxisPoints"][j+1])
+			#print angle
 			crickAngles.append(angle)
 		crickAnglesForAllHelices.append(crickAngles)
-		i+=1
+	
+	#print "crickAnglesForAllHelices:", crickAnglesForAllHelices
 	
 	avgCrickAngles=[]
 	for i in range (0, len(crickAngles)):
@@ -356,11 +356,15 @@ def pyTwister(selection, chains):
 		x=0
 		y=0
 		for j in range(0, len(chains)):
+			#print crickAnglesForAllHelices[j][i]
 			x+=numpy.cos(crickAnglesForAllHelices[j][i]*numpy.pi/180)
 			y+=numpy.sin(crickAnglesForAllHelices[j][i]*numpy.pi/180)
+		
 		avg=numpy.arctan2(y,x)*180/numpy.pi
+		#print avg
 		avgCrickAngles.append(avg)
 	avgCrickAngles.append(0)
+	#print "avgCrickAngles:", avgCrickAngles
 	
 	#assign heptad positions
 	pos=[]

@@ -364,17 +364,6 @@ def showAxesInPymol(helicesInSelection, avgCoiledCoilParameters):
 	cmd.hide("nonbonded")
  
 def pyTwister(selection, chains):
-	'''
-	pyTwister
-	A python version of TWISTER by Sergej Strelkov.\n
-	\n
-	Ref:\n
-	Strelkov, S.V., and Burkhard, P. (2002).
-	Analysis of α-Helical Coiled Coils with the Program TWISTER\n
-	Reveals a Structural Mechanism for Stutter Compensation.\n
-	J. Struct. Biol. 137, 54–64.
-	'''
-	
 	#make list of residueNames
 	stored.residueNumbersInSelection=[]
 	cmd.iterate(selection + " & name ca", "stored.residueNumbersInSelection.append(resi)")

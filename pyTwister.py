@@ -278,6 +278,71 @@ def makeResultsTable(helicesInSelection, residuesInSelection, residueNumbersInSe
 	table.append(stdevs)
 	return table
 
+def getOLC(string):
+	if string == "GLY": return "G"
+	elif string == "ALA": return "A"
+	elif string == "VAL": return "V"
+	elif string == "LEU": return "L"
+	elif string == "ILE": return "I"
+	elif string == "PRO": return "P"
+	elif string == "ASN": return "N"
+	elif string == "ASP": return "D"
+	elif string == "GLN": return "Q"
+	elif string == "GLU": return "E"
+	elif string == "HIS": return "H"
+	elif string == "SER": return "S"
+	elif string == "THR": return "T"
+	elif string == "ARG": return "R"
+	elif string == "LYS": return "K"
+	elif string == "TRP": return "W"
+	elif string == "TYR": return "Y"
+	elif string == "PHE": return "F"
+	elif string == "CYS": return "C"
+	elif string == "MET": return "M"
+	else: return "?"
+
+def printSequence(residueNumbersInSelection, residuesInSelection, heptadPositions):
+	charactersPerLine = 60
+	lines=[]
+	numberOfResidues = int(residueNumbersInSelection[len(residueNumbersInSelection)-1])-int(residueNumbersInSelection[0])+1
+	firstResidue = int(residueNumbersInSelection[0])
+	#print residueNumbersInSelection[len(residueNumbersInSelection)-1]
+	#print residueNumbersInSelection[0]
+	#print len(heptadPositions), len(residueNumbersInSelection), numberOfResidues
+	h = 0
+	while h < numberOfResidues:
+		line1=""
+		line2=""
+		line3=""
+		for i in range (0,3):
+			j = 0
+			if numberOfResidues - h >= charactersPerLine:
+				charactersPerLine = charactersPerLine
+			else:
+				charactersPerLine = numberOfResidues - h
+			while j < charactersPerLine:
+				if i == 0 and (firstResidue+h+j) % 10 == 0:
+					#print firstResidue+h+j
+					line1+=str(firstResidue+h+j)
+					j+=len(str(firstResidue+h+j))-1
+				elif i == 0 and (firstResidue+h+j) % 10 > len(str(firstResidue+h+j))-1:
+					line1+=" "
+				if i == 1:
+					line2+=getOLC(residuesInSelection[h+j])
+				if i == 2:
+					line3+=heptadPositions[h+j]
+				j+=1
+		lines.append(line1)
+		lines.append(line2)
+		lines.append(line3)
+		lines.append(" ")
+		h+=charactersPerLine
+	print ""
+	print "Sequence with heptad positions:"
+	print ""
+	for line in lines:
+		print line
+
 def showAxesInPymol(helicesInSelection, avgCoiledCoilParameters):
 	cmd.set("dash_gap","0")
 	cmd.set("dash_radius","0.2")
@@ -300,8 +365,14 @@ def showAxesInPymol(helicesInSelection, avgCoiledCoilParameters):
  
 def pyTwister(selection, chains):
 	'''
-	DESCRIPTION
-	Brief description what this function does goes here
+	pyTwister
+	A python version of TWISTER by Sergej Strelkov.\n
+	\n
+	Ref:\n
+	Strelkov, S.V., and Burkhard, P. (2002).
+	Analysis of α-Helical Coiled Coils with the Program TWISTER\n
+	Reveals a Structural Mechanism for Stutter Compensation.\n
+	J. Struct. Biol. 137, 54–64.
 	'''
 	
 	#make list of residueNames
@@ -366,7 +437,10 @@ def pyTwister(selection, chains):
 	#assign heptad positions
 	heptadPositions=assignHeptadPositions(helicesInSelection, avgCrickAngles, stored.residueNumbersInSelection, selection)
 	
-	#make a nice table of results
+	#print sequence with heptad positions
+	printSequence(stored.residueNumbersInSelection, stored.residuesInSelection, heptadPositions)
+	
+	#print a nice table of the results
 	table=makeResultsTable(helicesInSelection, stored.residuesInSelection, stored.residueNumbersInSelection, avgCoiledCoilParameters, avgAlphaHelixParameters, heptadPositions, avgCrickAngles)
 	pprint_table(out, table)	
 	

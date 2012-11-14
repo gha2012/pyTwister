@@ -8,12 +8,10 @@ import random
 locale.setlocale(locale.LC_NUMERIC, "")
 out = sys.stdout
 def __init__(self):
-	"""pyTwister: A PyMOL version of Twister"""
+	"""pyTwister: A PyMOL version of Twister. Reference: Strelkov et al. 2002"""
 
 def format_num(num):
-	"""Format a number according to given places.
-	Adds commas, etc."""
-
+	"""http://ginstrom.com/scribbles/2007/09/04/pretty-printing-a-table-in-python/"""
 	try:
 		return locale.format("%.2f", (num), True)
 
@@ -21,14 +19,19 @@ def format_num(num):
 		return str(num)
 
 def get_max_width(table, index):
-	"""Get the maximum width of the given column index"""
+	"""Get the maximum width of the given column index
+	http://ginstrom.com/scribbles/2007/09/04/pretty-printing-a-table-in-python/
+	"""
 	return max([len(format_num(row[index])) for row in table])
 
 def pprint_table(out, table):
 	"""Prints out a table of data, padded for alignment
 	@param out: Output stream (file-like object)
 	@param table: The table to print. A list of lists.
-	Each row must have the same number of columns. """
+	Each row must have the same number of columns. 
+	http://ginstrom.com/scribbles/2007/09/04/pretty-printing-a-table-in-python/
+	"""
+	
 	col_paddings = []
 
 	for i in range(len(table[0])):
@@ -61,12 +64,10 @@ def createPseudoatom (coordinates, objectName):
 	x=float(coordinates[0])
 	y=float(coordinates[1])
 	z=float(coordinates[2])
-	#print x,y,z,objectName
 	posString="[%3.2f,%3.2f,%3.2f]" % (x,y,z)
 	cmd.pseudoatom(pos=posString, object=objectName)
 
 def getCaPositions(selection):	 
-	#print selection
 	stored.xyz = []
 	cmd.iterate_state(1,selection,"stored.xyz.append([x,y,z])")
 	caPositions=numpy.array(stored.xyz)
@@ -149,7 +150,6 @@ def calculateavgCrickAngles(helicesInSelection, avgCoiledCoilParameters, chains)
 	#calculate Crick angles avgd over all helices and assign positions
 	crickAnglesForAllHelices=[]
 	for i in range (0,len(chains)):
-		#print i
 		crickAngles=[]
 		crickAngles.append(0)
 		for j in range (1,len(helicesInSelection[i]["avgAlphaHelixAxisPoints"])-1):
@@ -164,15 +164,12 @@ def calculateavgCrickAngles(helicesInSelection, avgCoiledCoilParameters, chains)
 		x=0
 		y=0
 		for j in range(0, len(chains)):
-			#print crickAnglesForAllHelices[j][i]
 			x+=numpy.cos(crickAnglesForAllHelices[j][i]*numpy.pi/180)
 			y+=numpy.sin(crickAnglesForAllHelices[j][i]*numpy.pi/180)
 		
 		avg=numpy.arctan2(y,x)*180/numpy.pi
-		#print avg
 		avgCrickAngles.append(avg)
 	avgCrickAngles.append(0)
-	#print "avgCrickAngles:", avgCrickAngles
 	return avgCrickAngles
 
 def assignHeptadPositions(helicesInSelection, avgCrickAngles, residueNumbersInSelection, selection):
@@ -190,7 +187,6 @@ def assignHeptadPositions(helicesInSelection, avgCrickAngles, residueNumbersInSe
 		else:
 			pos.append("?")
 	pos.append("?")
-	#print pos
 	for i in range (1, len(pos)-1):
 		if pos[i]=="?":
 			if pos[i-1] == "a":
@@ -204,7 +200,6 @@ def assignHeptadPositions(helicesInSelection, avgCrickAngles, residueNumbersInSe
 			elif pos[i-1] == "f":
 				pos[i]="g"
 
-	#print pos
 	#tidy up beginning
 	for i in range (4, 0, -1):
 		if pos[i]=="?":
@@ -228,7 +223,6 @@ def makeResultsTable(helicesInSelection, residuesInSelection, residueNumbersInSe
 	table = []
 	table = [["Res.", "cc-rad", "cc-rise", "cc-pitch", "cc-phaseYield", "pos","Crick-angle", "a-radius", "a-rise", "a-res/turn", "a-phaseYield"]]
 	for i in range (1,len(helicesInSelection[0]["avgAlphaHelixAxisPoints"])-1):
-		#print i
 		list=[]
 		list.append(stored.residuesInSelection[i]+ " " +stored.residueNumbersInSelection[i])
 		list.append(avgCoiledCoilParameters['coiledCoilRadiusPerResidue'][i])
@@ -245,29 +239,29 @@ def makeResultsTable(helicesInSelection, residuesInSelection, residueNumbersInSe
 	
 	avgs = []
 	stdevs = []
-	avgCoiledCoilRadius = numpy.mean(avgCoiledCoilParameters['coiledCoilRadiusPerResidue'])
-	stdevCoiledCoilRadius = numpy.std(avgCoiledCoilParameters['coiledCoilRadiusPerResidue'])
+	avgCoiledCoilRadius = avg(avgCoiledCoilParameters['coiledCoilRadiusPerResidue'])
+	stdevCoiledCoilRadius = std(avgCoiledCoilParameters['coiledCoilRadiusPerResidue'])
 	
-	avgCoiledCoilRise = numpy.mean(avgCoiledCoilParameters['coiledCoilRisesPerResidue'])
-	stdevCoiledCoilRise = numpy.std(avgCoiledCoilParameters['coiledCoilRisesPerResidue'])
+	avgCoiledCoilRise = avg(avgCoiledCoilParameters['coiledCoilRisesPerResidue'])
+	stdevCoiledCoilRise = std(avgCoiledCoilParameters['coiledCoilRisesPerResidue'])
 	
-	avgCoiledCoilPitch = numpy.mean(avgCoiledCoilParameters['coiledCoilPitch'])
-	stdevCoiledCoilPitch = numpy.std(avgCoiledCoilParameters['coiledCoilPitch'])
+	avgCoiledCoilPitch = avg(avgCoiledCoilParameters['coiledCoilPitch'])
+	stdevCoiledCoilPitch = std(avgCoiledCoilParameters['coiledCoilPitch'])
 	
-	avgCoiledCoilPhaseYield = numpy.mean(avgCoiledCoilParameters['coiledCoilPhaseYieldsPerResidue'])
-	stdevCoiledCoilPhaseYield = numpy.std(avgCoiledCoilParameters['coiledCoilPhaseYieldsPerResidue'])
+	avgCoiledCoilPhaseYield = avg(avgCoiledCoilParameters['coiledCoilPhaseYieldsPerResidue'])
+	stdevCoiledCoilPhaseYield = std(avgCoiledCoilParameters['coiledCoilPhaseYieldsPerResidue'])
 	
-	avgAlphaHelixRadius = numpy.mean(avgAlphaHelixParameters['alphaHelixRadiusPerResidue'])
-	stdevAlphaHelixRadius = numpy.std(avgAlphaHelixParameters['alphaHelixRadiusPerResidue'])
+	avgAlphaHelixRadius = avg(avgAlphaHelixParameters['alphaHelixRadiusPerResidue'])
+	stdevAlphaHelixRadius = std(avgAlphaHelixParameters['alphaHelixRadiusPerResidue'])
 	
-	avgAlphaHelixRise = numpy.mean(avgAlphaHelixParameters['alphaHelixRisesPerResidue'])
-	stdevAlphaHelixRise = numpy.std(avgAlphaHelixParameters['alphaHelixRisesPerResidue'])
+	avgAlphaHelixRise = avg(avgAlphaHelixParameters['alphaHelixRisesPerResidue'])
+	stdevAlphaHelixRise = std(avgAlphaHelixParameters['alphaHelixRisesPerResidue'])
 	
-	avgResPerTurn = numpy.mean(avgAlphaHelixParameters['alphaHelixResiduesPerTurn'])
-	stdevResPerTurn = numpy.std(avgAlphaHelixParameters['alphaHelixResiduesPerTurn'])
+	avgResPerTurn = avg(avgAlphaHelixParameters['alphaHelixResiduesPerTurn'])
+	stdevResPerTurn = std(avgAlphaHelixParameters['alphaHelixResiduesPerTurn'])
 	
-	avgAlphaHelixPhaseYield = numpy.mean(avgAlphaHelixParameters['alphaHelixPhaseYieldsPerResidue'])
-	stdevAlphaHelixPhaseYield = numpy.std(avgAlphaHelixParameters['alphaHelixPhaseYieldsPerResidue'])
+	avgAlphaHelixPhaseYield = avg(avgAlphaHelixParameters['alphaHelixPhaseYieldsPerResidue'])
+	stdevAlphaHelixPhaseYield = std(avgAlphaHelixParameters['alphaHelixPhaseYieldsPerResidue'])
 	
 	avgs = ["Avg", avgCoiledCoilRadius, avgCoiledCoilRise, avgCoiledCoilPitch, avgCoiledCoilPhaseYield, "-","-", avgAlphaHelixRadius, avgAlphaHelixRise, avgResPerTurn, avgAlphaHelixPhaseYield]
 	stdevs = ["Std", stdevCoiledCoilRadius, stdevCoiledCoilRise, stdevCoiledCoilPitch, stdevCoiledCoilPhaseYield, "-","-", stdevAlphaHelixRadius, stdevAlphaHelixRise, stdevResPerTurn, stdevAlphaHelixPhaseYield]
@@ -278,6 +272,14 @@ def makeResultsTable(helicesInSelection, residuesInSelection, residueNumbersInSe
 	table.append(stdevs)
 	return table
 
+def avg(array):
+	avg=numpy.average(array[numpy.nonzero(array)])
+	return avg
+
+def std(array):
+	std=numpy.std(array[numpy.nonzero(array)])
+	return std
+	
 def getOLC(string):
 	if string == "GLY": return "G"
 	elif string == "ALA": return "A"
@@ -306,9 +308,6 @@ def printSequence(residueNumbersInSelection, residuesInSelection, heptadPosition
 	lines=[]
 	numberOfResidues = int(residueNumbersInSelection[len(residueNumbersInSelection)-1])-int(residueNumbersInSelection[0])+1
 	firstResidue = int(residueNumbersInSelection[0])
-	#print residueNumbersInSelection[len(residueNumbersInSelection)-1]
-	#print residueNumbersInSelection[0]
-	#print len(heptadPositions), len(residueNumbersInSelection), numberOfResidues
 	h = 0
 	while h < numberOfResidues:
 		line1=""
@@ -322,7 +321,6 @@ def printSequence(residueNumbersInSelection, residuesInSelection, heptadPosition
 				charactersPerLine = numberOfResidues - h
 			while j < charactersPerLine:
 				if i == 0 and (firstResidue+h+j) % 10 == 0:
-					#print firstResidue+h+j
 					line1+=str(firstResidue+h+j)
 					j+=len(str(firstResidue+h+j))-1
 				elif i == 0 and (firstResidue+h+j) % 10 > len(str(firstResidue+h+j))-1:
@@ -347,7 +345,6 @@ def showAxesInPymol(helicesInSelection, avgCoiledCoilParameters):
 	cmd.set("dash_gap","0")
 	cmd.set("dash_radius","0.2")
 	for i in range (0, len(helicesInSelection)):
-		#print len(helicesInSelection),i
 		for j in range (0,len(helicesInSelection[i]["avgAlphaHelixAxisPoints"])):
 			createPseudoatom(helicesInSelection[i]["avgAlphaHelixAxisPoints"][j],"helixAxisPoint_"+str(i)+"_"+str(j))
 			createPseudoatom(avgCoiledCoilParameters["coiledCoilAxisPoints"][j],"coiledCoilAxisPoint_"+str(i)+"_"+str(j))
@@ -436,4 +433,5 @@ def pyTwister(selection, chains):
 	#show Axes in pymol
 	showAxesInPymol(helicesInSelection, avgCoiledCoilParameters)
 	
+	print "Done."
 cmd.extend( "pyTwister", pyTwister );
